@@ -10,19 +10,73 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const userExists = users.find((user) => user.username === username);
+
+  if (userExists) {
+    request.user = userExists;
+    return next();
+  }
+
+  return response.status(404);
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if (user.pro) {
+    return next();
+  } else if (user.todos.length < 10) {
+    return next();
+  }
+
+  return response.status(403).json({ error: '' });
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  if (!validate(id)) {
+    return response.status(400);
+  }
+
+  const userExists = users.find((user) => user.username === username);
+
+  if (userExists) {
+    
+    const todoExists = userExists.todos.find((todo) => todo.id === id);
+
+    if (todoExists) {
+      request.user = userExists;
+      request.todo = todoExists;
+      return next();
+    }
+  }
+
+  return response.status(404).json({error:true});
+
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  if (!validate(id)) {
+    return response.status(400);
+  }
+
+  const userExists = users.find((user) => user.id === id);
+
+  if (userExists) {
+    request.user = userExists;
+    return next();
+  }
+
+  return response.status(404).json({error:''});
+
+
+
 }
 
 app.post('/users', (request, response) => {
